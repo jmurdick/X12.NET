@@ -36,7 +36,10 @@
         public static ClaimDocument Deserialize(string xml)
         {
             var serializer = new XmlSerializer(typeof(ClaimDocument));
-            return (ClaimDocument)serializer.Deserialize(new StringReader(xml));
+            using (var reader = new StringReader(xml))
+            {
+                return (ClaimDocument)serializer.Deserialize(reader);
+            }            
         }
 
         /// <summary>
@@ -45,9 +48,11 @@
         /// <returns>String representation of the object in XML</returns>
         public string Serialize()
         {
-            var writer = new StringWriter();
-            new XmlSerializer(typeof(ClaimDocument)).Serialize(writer, this);
-            return writer.ToString();
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof(ClaimDocument)).Serialize(writer, this);
+                return writer.ToString();
+            }
         }
     }
 }

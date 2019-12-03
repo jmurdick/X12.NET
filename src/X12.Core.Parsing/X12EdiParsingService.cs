@@ -53,8 +53,11 @@
         /// <returns>XML string from parsed X12 data</returns>
         public string Transform(string x12)
         {
-            Interchange interchange = this.parser.ParseMultiple(new MemoryStream(Encoding.ASCII.GetBytes(x12))).FirstOrDefault();
-            return interchange?.Serialize(this.suppressComments);
+            using (var stream = new MemoryStream(Encoding.ASCII.GetBytes(x12)))
+            {
+                Interchange interchange = this.parser.ParseMultiple(stream).FirstOrDefault();
+                return interchange?.Serialize(this.suppressComments);
+            }
         }
     }
 }

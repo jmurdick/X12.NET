@@ -42,7 +42,10 @@
         public static EligibilityBenefitResponse Deserialize(string xml)
         {
             var serializer = new XmlSerializer(typeof(EligibilityBenefitResponse));
-            return (EligibilityBenefitResponse)serializer.Deserialize(new StringReader(xml));
+            using (var reader = new StringReader(xml))
+            {
+                return (EligibilityBenefitResponse)serializer.Deserialize(reader);
+            }            
         }
 
         /// <summary>
@@ -51,9 +54,11 @@
         /// <returns>XML string representation of benefit response</returns>
         public string Serialize()
         {
-            var writer = new StringWriter();
-            new XmlSerializer(typeof(EligibilityBenefitResponse)).Serialize(writer, this);
-            return writer.ToString();
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof(EligibilityBenefitResponse)).Serialize(writer, this);
+                return writer.ToString();
+            }
         }
         #endregion
     }

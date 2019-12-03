@@ -331,15 +331,20 @@
         #region Serialization Methods
         public string Serialize()
         {
-            StringWriter writer = new StringWriter();
-            new XmlSerializer(typeof(UB04Claim)).Serialize(writer, this);
-            return writer.ToString();
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof(UB04Claim)).Serialize(writer, this);
+                return writer.ToString();
+            }
         }
 
         public static UB04Claim Deserialize(string xml)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(UB04Claim));
-            return (UB04Claim)serializer.Deserialize(new StringReader(xml));
+            using (var reader = new StringReader(xml))
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(UB04Claim));
+                return (UB04Claim)serializer.Deserialize(reader);
+            }
         }
         #endregion
     }

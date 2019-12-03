@@ -105,7 +105,7 @@
                     var ik5 = ak2.AddSegment(new TypedSegmentIK5());
                     ik5.IK501_TransactionSetAcknowledgmentCode = response.AcknowledgmentCode.ToString().Substring(0, 1);
 
-                    if (response.SyntaxErrorCodes.Count > 0)
+                    if (response.SyntaxErrorCodes.Any())
                     {
                         ik5.IK502_SyntaxErrorCode = response.SyntaxErrorCodes[0];
                     }
@@ -138,7 +138,7 @@
                 ak9.AK903_NumberOfReceivedTransactionSets = groupResponse.TransactionSetResponses.Count;
                 ak9.AK904_NumberOfAcceptedTransactionSets = groupResponse.TransactionSetResponses.Count(tsr => tsr.AcknowledgmentCode == AcknowledgmentCode.A_Accepted || tsr.AcknowledgmentCode == AcknowledgmentCode.E_Accepted_ButErrorsWereNoted);
 
-                if (groupResponse.SyntaxErrorCodes.Count > 0)
+                if (groupResponse.SyntaxErrorCodes.Any())
                 {
                     ak9.AK905_FunctionalGroupSyntaxErrorCode = groupResponse.SyntaxErrorCodes[0];
                 }

@@ -130,7 +130,11 @@
                     {
                         Stream specStream = Assembly.GetExecutingAssembly()
                             .GetManifestResourceStream($"X12.Core.Specifications.Resource.Ansi-{key}Specification.xml");
-                        return TransactionSpecification.Deserialize(new StreamReader(specStream).ReadToEnd());
+
+                        using (var reader = new StreamReader(specStream))
+                        {
+                            return TransactionSpecification.Deserialize(reader.ReadToEnd());
+                        }                        
                     });
         }
 
@@ -142,8 +146,13 @@
                 {
                     Stream specStream = Assembly.GetExecutingAssembly()
                         .GetManifestResourceStream("X12.Core.Specifications.Resource.Ansi-4010Specification.xml");
-                    var reader = new StreamReader(specStream);
-                    SegmentSet set = SegmentSet.Deserialize(reader.ReadToEnd());
+
+                    SegmentSet set;
+                    using (var reader = new StreamReader(specStream)) 
+                    {
+                        set = SegmentSet.Deserialize(reader.ReadToEnd());
+                    }
+                        
                     _4010Specification = new Dictionary<string, SegmentSpecification>();
                     foreach (var segment in set.Segments)
                     {
@@ -177,8 +186,13 @@
                 {
                     Stream specStream = Assembly.GetExecutingAssembly()
                         .GetManifestResourceStream("X12.Core.Specifications.Resource.Ansi-5010Specification.xml");
-                    var reader = new StreamReader(specStream);
-                    SegmentSet set = SegmentSet.Deserialize(reader.ReadToEnd());
+
+                    SegmentSet set;
+                    using (var reader = new StreamReader(specStream))
+                    {
+                        set = SegmentSet.Deserialize(reader.ReadToEnd());
+                    }
+
                     _5010Specification = new Dictionary<string, SegmentSpecification>();
                     foreach (var segment in set.Segments)
                     {

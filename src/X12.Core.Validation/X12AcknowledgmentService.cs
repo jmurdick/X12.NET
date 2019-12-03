@@ -203,7 +203,7 @@
                         {
                             var matchingLoopSpecs = currentContainer.Spec.LoopSpecifications.Where(ls => ls.StartingSegment.SegmentId == segmentInfo.SegmentId).ToList();
 
-                            if (matchingLoopSpecs.Count > 0)
+                            if (matchingLoopSpecs.Any())
                             {
                                 IContainerSpecification matchingLoopSpec;
                                 if (matchingLoopSpecs.Count == 1)
@@ -275,8 +275,7 @@
 
                 if (trailerSegment.Elements.Length >= 2)
                 {
-                    int segmentCount;
-                    int.TryParse(trailerSegment.Elements[1], out segmentCount);
+                    int.TryParse(trailerSegment.Elements[1], out int segmentCount);
                     if (segmentCount != segmentInfos.Count)
                     {
                         response.SyntaxErrorCodes.Add("4");
@@ -288,9 +287,9 @@
                 }
             }
 
-            if (response.SegmentErrors.Count > 0 || response.SyntaxErrorCodes.Count > 0)
+            if (response.SegmentErrors.Any() || response.SyntaxErrorCodes.Any())
             {
-                if (response.SegmentErrors.Count > 0)
+                if (response.SegmentErrors.Any())
                 {
                     response.SyntaxErrorCodes.Add("5");
                 }
@@ -322,7 +321,7 @@
                         { 
                             SegmentId = segmentSpec.SegmentId,
                             LoopId = container.Spec.LoopId,
-                            SegmentPosition = container.Segments.Count > 0 ? container.Segments.First().SegmentPosition : 0
+                            SegmentPosition = container.Segments.Any() ? container.Segments.First().SegmentPosition : 0
                         },
                         "3"));
                 }
@@ -346,7 +345,7 @@
                                 {
                                     SegmentId = loopSpec.StartingSegment.SegmentId,
                                     LoopId = container.Spec.LoopId,
-                                    SegmentPosition = container.Segments.Count > 0 ? container.Segments.Last().SegmentPosition : 0
+                                    SegmentPosition = container.Segments.Any() ? container.Segments.Last().SegmentPosition : 0
                                 },
                                 "I7"));
                 }

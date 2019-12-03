@@ -59,7 +59,10 @@
         public static EligibilityBenefitDocument Deserialize(string xml)
         {
             var serializer = new XmlSerializer(typeof(EligibilityBenefitDocument));
-            return (EligibilityBenefitDocument)serializer.Deserialize(new StringReader(xml));
+            using (var reader = new StringReader(xml))
+            {
+                return (EligibilityBenefitDocument)serializer.Deserialize(reader);
+            }            
         }
 
         /// <summary>
@@ -68,9 +71,11 @@
         /// <returns>XML string serialized from object</returns>
         public string Serialize()
         {
-            var writer = new StringWriter();
-            new XmlSerializer(typeof(EligibilityBenefitDocument)).Serialize(writer, this);
-            return writer.ToString();
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof(EligibilityBenefitDocument)).Serialize(writer, this);
+                return writer.ToString();
+            }
         }
     }
 }

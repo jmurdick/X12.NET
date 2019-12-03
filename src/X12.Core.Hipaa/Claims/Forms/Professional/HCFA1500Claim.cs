@@ -140,19 +140,25 @@
         public string Field33_BillingProvider_Zip { get; set; }                             //
         public string Field33a_BillingProvider_Npi { get; set; }     // 10 characters
         public string Field33b_BillingProvider_OtherID { get; set; }                         // 17 characters
+
         #region Serialization Methods
 
         public string Serialize()
         {
-            var writer = new StringWriter();
-            new XmlSerializer(typeof(HCFA1500Claim)).Serialize(writer, this);
-            return writer.ToString();
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof(HCFA1500Claim)).Serialize(writer, this);
+                return writer.ToString();
+            }
         }
 
         public static HCFA1500Claim Deserialize(string xml)
         {
-            var serializer = new XmlSerializer(typeof(HCFA1500Claim));
-            return (HCFA1500Claim)serializer.Deserialize(new StringReader(xml));
+            using (var reader = new StringReader(xml))
+            {
+                var serializer = new XmlSerializer(typeof(HCFA1500Claim));
+                return (HCFA1500Claim)serializer.Deserialize(reader);
+            }
         }
         #endregion
     }

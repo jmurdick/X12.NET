@@ -29,7 +29,10 @@
             if (transform == null)
             {
                 transform = new XslCompiledTransform();
-                transform.Load(XmlReader.Create(TransformationStreamFactory.GetHtmlTransformationStream()));
+                using (var xmlReader = XmlReader.Create(TransformationStreamFactory.GetHtmlTransformationStream()))
+                {
+                    transform.Load(xmlReader);
+                }                
             }
 
             return transform;

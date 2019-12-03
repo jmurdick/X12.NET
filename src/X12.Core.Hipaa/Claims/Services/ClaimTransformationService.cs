@@ -80,11 +80,16 @@
                 transform.Load(XmlReader.Create(transformStream));
             }
 
-            var outputStream = new MemoryStream();
-
-            transform.Transform(XmlReader.Create(new StringReader(xml)), new XsltArgumentList(), outputStream);
-            outputStream.Position = 0;
-            xml = new StreamReader(outputStream).ReadToEnd();
+            using (var outputStream = new MemoryStream())
+            using (var xmlReader = new StringReader(xml))
+            {
+                transform.Transform(XmlReader.Create(xmlReader), new XsltArgumentList(), outputStream);
+                outputStream.Position = 0;
+                using (var reader = new StreamReader(outputStream))
+                {
+                    xml = reader.ReadToEnd();
+                }                
+            }
 
             return ClaimDocument.Deserialize(xml);
         }

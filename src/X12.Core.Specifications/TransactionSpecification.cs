@@ -64,10 +64,12 @@
         /// <returns>Equivalent transaction specification</returns>
         public static TransactionSpecification Deserialize(string xml)
         {
-            var stringReader = new StringReader(xml);
-            var xmlTextReader = new System.Xml.XmlTextReader(stringReader);
-            var xmlSerializer = new XmlSerializer(typeof(TransactionSpecification));
-            return (TransactionSpecification)xmlSerializer.Deserialize(xmlTextReader);
+            using (var stringReader = new StringReader(xml))
+            using (var xmlTextReader = new System.Xml.XmlTextReader(stringReader))
+            {
+                var xmlSerializer = new XmlSerializer(typeof(TransactionSpecification));
+                return (TransactionSpecification)xmlSerializer.Deserialize(xmlTextReader);
+            }
         }
 
         /// <summary>
@@ -77,11 +79,15 @@
         public string Serialize()
         {
             var xmlSerializer = new XmlSerializer(typeof(TransactionSpecification));
-            var mstream = new MemoryStream();
-            xmlSerializer.Serialize(mstream, this);
-            mstream.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(mstream);
-            return streamReader.ReadToEnd();
+            using (var mstream = new MemoryStream())
+            {
+                xmlSerializer.Serialize(mstream, this);
+                mstream.Seek(0, SeekOrigin.Begin);
+                using (var streamReader = new StreamReader(mstream))
+                {
+                    return streamReader.ReadToEnd();
+                }                    
+            }
         }
     }
 }

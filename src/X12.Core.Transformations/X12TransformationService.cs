@@ -32,10 +32,14 @@
         {
             string xml = this.PreProcessor.Transform(x12);
             XslCompiledTransform transform = this.GetTransform();
-            var writer = new StringWriter();
 
-            transform.Transform(XmlReader.Create(new StringReader(xml)), this.GetArguments(), writer);
-            return writer.GetStringBuilder().ToString();
+            using (var writer = new StringWriter())
+            using (var stringReader = new StringReader(xml))
+            using (var xmlReader = XmlReader.Create(stringReader))
+            {
+                transform.Transform(xmlReader, this.GetArguments(), writer);
+                return writer.GetStringBuilder().ToString();
+            }
         }
 
         /// <summary>

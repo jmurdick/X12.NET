@@ -53,11 +53,12 @@
         /// <returns>Segment set deserialized from the XML string</returns>
         public static SegmentSet Deserialize(string xml)
         {
-            var stringReader = new StringReader(xml);
-            var xmlTextReader = new System.Xml.XmlTextReader(stringReader);
-            var xmlSerializer = new XmlSerializer(typeof(SegmentSet));
-
-            return (SegmentSet)xmlSerializer.Deserialize(xmlTextReader);
+            using (var stringReader = new StringReader(xml))
+            using (var xmlTextReader = new System.Xml.XmlTextReader(stringReader))
+            {
+                var xmlSerializer = new XmlSerializer(typeof(SegmentSet));
+                return (SegmentSet)xmlSerializer.Deserialize(xmlTextReader);
+            }
         }
 
         /// <summary>
@@ -67,11 +68,15 @@
         public string Serialize()
         {
             var xmlSerializer = new XmlSerializer(typeof(SegmentSet));
-            var mstream = new MemoryStream();
-            xmlSerializer.Serialize(mstream, this);
-            mstream.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(mstream);
-            return streamReader.ReadToEnd();
+            using (var mstream = new MemoryStream())
+            {
+                xmlSerializer.Serialize(mstream, this);
+                mstream.Seek(0, SeekOrigin.Begin);
+                using (var streamReader = new StreamReader(mstream))
+                {
+                    return streamReader.ReadToEnd();
+                }                    
+            }
         }
     }
 }

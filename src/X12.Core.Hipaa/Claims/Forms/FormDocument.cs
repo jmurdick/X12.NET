@@ -35,8 +35,11 @@
         /// <returns>Representative <see cref="FormDocument"/> object</returns>
         public static FormDocument Deserialize(string xml)
         {
-            var serializer = new XmlSerializer(typeof(FormDocument));
-            return (FormDocument)serializer.Deserialize(new StringReader(xml));
+            using (var reader = new StringReader(xml))
+            {
+                var serializer = new XmlSerializer(typeof(FormDocument));
+                return (FormDocument)serializer.Deserialize(reader);
+            }
         }
 
         /// <summary>
@@ -45,9 +48,11 @@
         /// <returns>XML string that represents the object</returns>
         public string Serialize()
         {
-            var writer = new StringWriter();
-            new XmlSerializer(typeof(FormDocument)).Serialize(writer, this);
-            return writer.ToString();
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof(FormDocument)).Serialize(writer, this);
+                return writer.ToString();
+            }
         }
     }
 }

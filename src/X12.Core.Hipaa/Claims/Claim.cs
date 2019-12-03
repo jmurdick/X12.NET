@@ -354,7 +354,10 @@
         public static Claim Deserialize(string xml)
         {
             var serializer = new XmlSerializer(typeof(Claim));
-            return (Claim)serializer.Deserialize(new StringReader(xml));
+            using (var reader = new StringReader(xml))
+            {
+                return (Claim)serializer.Deserialize(reader);
+            }                
         }
 
         /// <summary>
@@ -363,9 +366,11 @@
         /// <returns>XML string representation of object</returns>
         public string Serialize()
         {
-            var writer = new StringWriter();
-            new XmlSerializer(typeof(Claim)).Serialize(writer, this);
-            return writer.ToString();
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof(Claim)).Serialize(writer, this);
+                return writer.ToString();
+            }
         }
         #endregion
     }
