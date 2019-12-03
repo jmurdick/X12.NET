@@ -1,33 +1,43 @@
 ﻿namespace X12.Core.Validation.Tests.Unit
 {
-    using System;
     using System.IO;
     using System.Linq;
     using System.Reflection;
 
     using NUnit.Framework;
 
-    using X12.Core.Shared.Models;
     using X12.Core.Validation;
 
     [TestFixture]
     public class X12AcknowledgmentServiceTester
     {
         [Test]
-        public void Acknowledge837ITest()
+        public void Acknowledge837I_HasCorrectResponseCount()
         {
             var service = new InstitutionalClaimAcknowledgmentService();
             var responses = service.AcknowledgeTransactions(this.GetEdi("837I_4010_Batch1.txt"));
 
-            Assert.AreEqual(1, responses.Count);
-            var response = responses.First();
-            Assert.AreEqual("612200041", response.GroupControlNumber);
-            Assert.AreEqual(54, response.TransactionSetResponses.Count);
+            Assert.That(responses.Count, Is.EqualTo(1));
+        }
 
-            var interchange = new Interchange(DateTime.Now, 1, true);
-            var group = interchange.AddFunctionGroup("FA", DateTime.Now, 1);
-            group.VersionIdentifierCode = "005010X231A1";
-            group.Add999Transaction(responses);
+        [Test]
+        public void Acknowledge837I_GroupControlNumberIsCorrect()
+        {
+            var service = new InstitutionalClaimAcknowledgmentService();
+            var responses = service.AcknowledgeTransactions(this.GetEdi("837I_4010_Batch1.txt"));
+
+            var response = responses.First();
+            Assert.That(response.GroupControlNumber, Is.EqualTo("612200041"));
+        }
+        
+        [Test]
+        public void Acknowledge837I_HasCorrectTransactionSetResponsesCount()
+        {
+            var service = new InstitutionalClaimAcknowledgmentService();
+            var responses = service.AcknowledgeTransactions(this.GetEdi("837I_4010_Batch1.txt"));
+
+            var response = responses.First();
+            Assert.That(response.TransactionSetResponses.Count, Is.EqualTo(54));
         }
 
         private Stream GetEdi(string filename)
