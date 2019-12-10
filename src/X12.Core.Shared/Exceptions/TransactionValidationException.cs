@@ -1,8 +1,6 @@
-﻿namespace X12.Core.Shared.Models
+﻿namespace X12.Core.Shared.Exceptions
 {
-    using System;
-
-    public class TransactionValidationException : ArgumentException
+    public class TransactionValidationException : X12Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionValidationException"/> class
@@ -20,7 +18,7 @@
             string elementId,
             string value,
             params object[] args)
-            : base(string.Format(formatString, transactionCode, controlNumber, elementId, value, args.Length > 0 ? args[0] : null, args.Length > 1 ? args[1] : null), transactionCode)
+            : base(string.Format(formatString, transactionCode, controlNumber, elementId, value, args.Length > 0 ? args[0] : null, args.Length > 1 ? args[1] : null))
         {
             this.TransactionCode = transactionCode;
             this.ControlNumber = controlNumber;

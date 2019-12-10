@@ -10,6 +10,7 @@
     using System.Xml.Xsl;
     
     using X12.Core.Parsing.Properties;
+    using X12.Core.Shared.Exceptions;
     using X12.Core.Shared.Models;
     using X12.Core.Specifications.Finders;
     using X12.Core.Specifications.Interfaces;
@@ -150,6 +151,7 @@
         public List<Interchange> ParseMultiple(Stream stream, Encoding encoding)
         {
             var envelopes = new List<Interchange>();
+            var exceptions = new List<Exception>();
 
             using (var reader = new X12StreamReader(stream, encoding, this.ignoredChars))
             {
@@ -169,6 +171,8 @@
                     switch (segmentId)
                     {
                         case "ISA":
+                            // TODO Break this into its own function that is in a try-catch
+                            //      Check inner methods to throw X12Exceptions instead of other types
                             envelop = new Interchange(this.specFinder, segmentString + reader.Delimiters.SegmentTerminator);
                             envelopes.Add(envelop);
                             currentContainer = envelop;
@@ -179,15 +183,17 @@
                         case "IEA":
                             if (envelop == null)
                             {
-                                throw new InvalidOperationException(string.Format(Resources.X12ParserMismatchSegment, segmentString, "ISA"));
+                                exceptions.Add(new X12Exception(string.Format(Resources.X12ParserMismatchSegment, segmentString, "ISA")));
+                                continue;
                             }
 
                             envelop.SetTerminatingTrailerSegment(segmentString);
                             break;
                         case "GS":
                             if (envelop == null)
-                            { 
-                                throw new InvalidOperationException(string.Format(Resources.X12ParserMissingPrecedingSegment, segmentString, "ISA"));
+                            {
+                                exceptions.Add(new InvalidOperationException(string.Format(Resources.X12ParserMissingPrecedingSegment, segmentString, "ISA")));
+                                continue;
                             }
 
                             currentContainer = fg = envelop.AddFunctionGroup(segmentString);
@@ -195,7 +201,8 @@
                         case "GE":
                             if (fg == null)
                             {
-                                throw new InvalidOperationException(string.Format(Resources.X12ParserMismatchSegment, segmentString, "GS"));
+                                exceptions.Add(new InvalidOperationException(string.Format(Resources.X12ParserMismatchSegment, segmentString, "GS")));
+                                continue;
                             }
 
                             fg.SetTerminatingTrailerSegment(segmentString);
@@ -204,7 +211,8 @@
                         case "ST":
                             if (fg == null)
                             {
-                                throw new InvalidOperationException(string.Format(Resources.X12ParserMissingGsSegment, segmentString));
+                                exceptions.Add(new InvalidOperationException(string.Format(Resources.X12ParserMissingGsSegment, segmentString)));
+                                continue;
                             }
 
                             segmentIndex = 1;
@@ -213,8 +221,9 @@
                             break;
                         case "SE":
                             if (tr == null)
-                            { 
-                                throw new InvalidOperationException(string.Format(Resources.X12ParserMismatchSegment, segmentString, "ST"));
+                            {
+                                exceptions.Add(new InvalidOperationException(string.Format(Resources.X12ParserMismatchSegment, segmentString, "ST")));
+                                continue;
                             }
 
                             tr.SetTerminatingTrailerSegment(segmentString);
@@ -234,10 +243,11 @@
                                 }
                                 else
                                 {
-                                    throw new InvalidOperationException(string.Format(
+                                    exceptions.Add(new InvalidOperationException(string.Format(
                                         Resources.X12ParserInvalidHLoopSpecification,
                                         segmentString,
-                                        tr.ControlNumber));
+                                        tr.ControlNumber)));
+                                    continue;
                                 }
                             }
 
@@ -253,7 +263,8 @@
                                 {
                                     if (this.throwExceptionOnSyntaxErrors)
                                     {
-                                        throw new InvalidOperationException(string.Format(Resources.X12ParserMissingParentIdError, id, parentId));
+                                        exceptions.Add(new InvalidOperationException(string.Format(Resources.X12ParserMissingParentIdError, id, parentId)));
+                                        continue;
                                     }
 
                                     this.OnParserWarning(new X12ParserWarningEventArgs
@@ -282,15 +293,17 @@
 
                             if (hloops.ContainsKey(id))
                             {
-                                throw new InvalidOperationException(string.Format(Resources.X12ParserHLoopIdExists, segmentString, tr.ControlNumber, id));
+                                exceptions.Add(new InvalidOperationException(string.Format(Resources.X12ParserHLoopIdExists, segmentString, tr.ControlNumber, id)));
+                                continue;
                             }
 
                             hloops.Add(id, (HierarchicalLoop)currentContainer);
                             break;
                         case "TA1":
                             if (envelop == null)
-                            { 
-                                throw new InvalidOperationException(string.Format(Resources.X12ParserMismatchSegment, segmentString, "ISA"));
+                            {
+                                exceptions.Add(new InvalidOperationException(string.Format(Resources.X12ParserMismatchSegment, segmentString, "ISA")));
+                                continue;
                             }
 
                             envelop.AddSegment(segmentString);
@@ -323,14 +336,15 @@
                                     {
                                         if (this.throwExceptionOnSyntaxErrors)
                                         {
-                                            throw new TransactionValidationException(
+                                            exceptions.Add(new TransactionValidationException(
                                                 Resources.X12ParserSegmentCannotBeIdentitied,
                                                 tran.IdentifierCode,
                                                 tran.ControlNumber,
                                                 string.Empty,
                                                 segmentString,
                                                 segmentIndex,
-                                                string.Join(",", containerStack));
+                                                string.Join(",", containerStack)));
+                                            continue;
                                         }
 
                                         currentContainer = originalContainer;
@@ -380,9 +394,11 @@
                     segmentId = reader.ReadSegmentId(segmentString);
                     segmentIndex++;
                 }
-
-                return envelopes;
             }
+
+            if (exceptions.Any())
+                throw new AggregateException("X12 Exceptions", exceptions);
+            return envelopes;
         }
 
         /// <summary>

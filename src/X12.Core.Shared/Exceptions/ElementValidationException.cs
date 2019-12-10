@@ -1,11 +1,9 @@
-﻿namespace X12.Core.Shared.Models
+﻿namespace X12.Core.Shared.Exceptions
 {
-    using System;
-
     /// <summary>
     /// Represents a validation exception of an X12 element
     /// </summary>
-    public class ElementValidationException : ArgumentException
+    public class ElementValidationException : X12Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ElementValidationException"/> class
@@ -22,8 +20,7 @@
                     value,
                     args.Length > 0 ? args[0] : null,
                     args.Length > 1 ? args[1] : null,
-                    args.Length > 2 ? args[2] : null),
-                elementId)
+                    args.Length > 2 ? args[2] : null))
         {
             this.ElementId = elementId;
             this.Value = value;
